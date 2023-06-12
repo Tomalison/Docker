@@ -13,3 +13,12 @@ Docker三大功用，
 2.跨平台部屬，用Docker hub。先安裝Docker Engine環境就可下載下來。
 3.建立乾淨測式環境，同樣概念可以用成資料庫安裝(測試資料、資料庫安裝/安裝指令)
 ![image](https://github.com/Tomalison/Docker/assets/96727036/010cff20-48d5-46f6-a17e-ac0736e11953)
+
+Linux可直接使用外，Windows 跟 MacOS都要使用 Virtual BOX 或OS Native使用
+
+![image](https://github.com/Tomalison/Docker/assets/96727036/0f8a0382-c606-4cc1-8872-60e7b213661f)
+
+先到官網找到Docker Toolbox 找到 toolbox realeses 下載dockertoolbox-24.0.2.exe，持續下一步安裝。
+Docker Desktop安裝方式，Windows10以上才可以安裝，安裝完後 用CMD 打上指令wsl --update 安裝Linux環境
+![image](https://github.com/Tomalison/Docker/assets/96727036/e0708be9-c106-466a-a750-cc97d21a68a4)
+開啟docker desktop並登入，docker pull hello-world / docker run hello-world / docker images
