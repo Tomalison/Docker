@@ -60,3 +60,20 @@ docker rm container的代號
 如果要強制清理
 docker rmi -f 帳號/專案名稱
 
+建立與使用Docker container
+docker container ls 查詢目前有哪些container
+docker pull alpine
+docker container run --name c001 alpine ls /  這邊可以將container縮寫
+
+當程序不要一直跑得話 可以用clear清掉
+docker run -it 可以讓我們需要跑的一個程序 一直跑下去 --name 可以取名
+docker run -it --name c003 alpine /bin/sh <--進到該程序需要的東西 再輸入exit 就可以離開這個程序離開這個container
+![image](https://github.com/Tomalison/Docker/assets/96727036/bc8e1690-e660-4c82-87c0-4b6a6e830647)
+
+docker run -d (daemon 長期在背景跑)
+tail -f 追蹤某個file的log 並把他印到console上 還有tail解決副我們通常用這個file
+docker run -d --name c004 alpine tail -f /dev/null
+在按docker container ls 可以看到我們這次終於有一個container一直在背景跑 他跑的就是剛剛指令中的tail -f /dev/null
+![image](https://github.com/Tomalison/Docker/assets/96727036/c987e65c-0707-4917-be92-31d4712723fa)
+還想在這個container加點東西，則打上docker exec -it 再加上我們的container ID +兩個要執行的程序 /bin/sh
+![image](https://github.com/Tomalison/Docker/assets/96727036/a7a8cf43-1291-4fcb-95c3-4fa304771336)
