@@ -138,7 +138,7 @@ RUN apk --update add apaches
 RUN rm -rf /var/cache/apk/*
 ENTRYPOINT ["httpd", "-D", "FOREGROUND"]
 ![image](https://github.com/Tomalison/Docker/assets/96727036/6ad3a94c-8e8a-4cd1-9005-e81a918bf11f)
-
+最後用 docker run -d -p 8081:80 (給LinuxVM一個port對應到aphache的80 port)
 
 
 
