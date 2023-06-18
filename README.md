@@ -77,3 +77,75 @@ docker run -d --name c004 alpine tail -f /dev/null
 ![image](https://github.com/Tomalison/Docker/assets/96727036/c987e65c-0707-4917-be92-31d4712723fa)
 還想在這個container加點東西，則打上docker exec -it 再加上我們的container ID +兩個要執行的程序 /bin/sh
 ![image](https://github.com/Tomalison/Docker/assets/96727036/a7a8cf43-1291-4fcb-95c3-4fa304771336)
+
+
+![image](https://github.com/Tomalison/Docker/assets/96727036/adcbf12b-553b-425b-97ed-49cde205d116)
+要將container清空之前要先將之停下來  docker container stop  ContainerID
+先用docker container ls -a查出所有的container
+將你要清掉的打上docker container rm ContainerID
+
+建立與使用Dockerfile
+我們透過Docker Client執行指令 而這些指令都會送到Docker Engine上面去(這是兩個工作者) 這整個過程中有三個空間 第一個是在硬體主機的OS空間 第二個是在虛擬主機建起來的LinuxOS空間
+第三個是Docker Engine去建起來的臨時Container空間。
+![image](https://github.com/Tomalison/Docker/assets/96727036/27b48fb2-db18-453e-b27a-c064b9f517cf)
+![image](https://github.com/Tomalison/Docker/assets/96727036/b1ea9684-bce3-4844-a77a-ef986a8bdbb6)
+![image](https://github.com/Tomalison/Docker/assets/96727036/ab4427de-9c94-45e8-8366-b20dd4aa20e0)
+![image](https://github.com/Tomalison/Docker/assets/96727036/55262637-d76a-4b6b-b199-47c0a5005b12)
+![image](https://github.com/Tomalison/Docker/assets/96727036/2994c895-faf7-4a44-8a7c-4813b51409aa)
+
+Dockerfile情境語法介紹FROM
+首先打上pwd到你想要到的目錄位置>再來打上touch Dockerfile建立空白file的指令>在目錄中打開這個file(用你熟悉的編輯器)
+打上 From alpine:latest (內含輕量的LinuxOS) <cat Dockerfile可以印出檔案內容
+有了Dockerfile之後就可以建立image >打上docker build -t uopsdod/001 取名為001
+讓他在背景跑 docker run -d uopsdod/001 tail -f /dev/null
+![image](https://github.com/Tomalison/Docker/assets/96727036/90c99d8a-cf26-4cca-8551-f472f0949ccf)
+![image](https://github.com/Tomalison/Docker/assets/96727036/8f3f1967-34f9-4919-a192-7c743eb61489)
+![image](https://github.com/Tomalison/Docker/assets/96727036/41468d1e-e69f-4375-86df-e2fd2afc7a17)
+
+![image](https://github.com/Tomalison/Docker/assets/96727036/100a9721-2f42-4bd1-9e0c-c9e554c1853b)
+因為已經有container有在背景執行所以要跟她互動 要打上他的containerID :  docker exec -it ContainerID /bin/sh (如上圖)
+![image](https://github.com/Tomalison/Docker/assets/96727036/6d5ee2a5-9f48-40fd-abf7-c55eb4a98c95)
+
+而剛剛我們在使用的語法都是由 一開始的Dockerfile內的那段語法 所提供的
+
+Dockerfile情境語法Entrypoint
+用在要讓別人使用這個image 但又不用打上一些我一開始設定的內容，這時候要打上entrypoint 該語法後面先用一個["tail", "-f", "/dev/null"]框框 (呈上題
+打好了將檔案儲存
+然後我們打上docker build -t uopsdod/002 . 這個時候就可以看到執行變成兩步驟(如下圖)
+![image](https://github.com/Tomalison/Docker/assets/96727036/2b2f0631-d0f6-4176-afc7-5215a0e9c4cb)
+![image](https://github.com/Tomalison/Docker/assets/96727036/6a126b37-0ece-4610-9c8f-c10b46f16a92)
+
+Dockerfile情境語法Run
+呈上 我們想要進去建立一個apache server
+docker run -d -p 8080:80  這邊port的mapping做好之後 再打上 image名稱  uopsdod/002
+![image](https://github.com/Tomalison/Docker/assets/96727036/51fb482d-368b-4fb9-9728-4c11732efb02)
+docker exec -it ContainerID /bin/sh
+![image](https://github.com/Tomalison/Docker/assets/96727036/b324036f-e950-4111-adca-7c77c80c359d)
+呈上圖啟動apache server 打上httpd -D FOREGROUND
+![image](https://github.com/Tomalison/Docker/assets/96727036/90598d41-1bb0-4731-8790-468451772095)
+
+接下來要找LINUX VM的位置 首先要知道她的IP位置 打上echo $(docker-machine ip)
+![image](https://github.com/Tomalison/Docker/assets/96727036/46770773-5beb-49a8-8c7d-b9cb3b5c2586)
+
+以上的安裝過程我們想要更方便，就要用到指令run
+From alpine:latest
+RUN echo "I'm in the image building process..."
+RUN ls -l / (這是列出所有根目錄下的檔案跟目錄
+ENTRYPOINT ["tail", "-f", "/dev/null"]
+
+From alpine:latest
+RUN apk --update add apaches
+RUN rm -rf /var/cache/apk/*
+ENTRYPOINT ["httpd", "-D", "FOREGROUND"]
+![image](https://github.com/Tomalison/Docker/assets/96727036/6ad3a94c-8e8a-4cd1-9005-e81a918bf11f)
+
+
+
+
+
+
+
+
+
+
+
