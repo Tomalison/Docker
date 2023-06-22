@@ -449,12 +449,271 @@ docker container ls
 ![image](https://github.com/Tomalison/Docker/assets/96727036/996b8964-af88-49c6-9e85-b55ecff3b89d)
 
 這次就留下了改變。
-![Uploading image.png…]()
+![image](https://github.com/Tomalison/Docker/assets/96727036/36b8cfd7-bffd-485e-94d1-226efea792ac)
 
 建立與使用Docker Compose
 Services / Networks / Volumes /
+![image](https://github.com/Tomalison/Docker/assets/96727036/24aac696-f101-4f32-a9f9-82ffff46f92a)
+透過Compose可以將上面三個元素一起管理起來
+![image](https://github.com/Tomalison/Docker/assets/96727036/ef6b7a01-5ab1-4a3c-a7df-28df6f96bbcd)
+ls
+cat Dockerfile
+touch docker-compose.yml
+找到檔案位置 開啟編輯器
+version: "3.7" (版本)
+services:
+ myweb:
+   bulid:
+     context: .
+     args:
+       whoami: "Tony"
+    image: uopsdod/myweb:latest
+    ports:
+      - "8080:80"
+    這是我們要看到的docker compose第一個版本的樣子
+cat docker-compose.yml
+docker-compose build --no-cache
+docker images
+![image](https://github.com/Tomalison/Docker/assets/96727036/c5780e5f-e50e-4466-b0c4-5497e1ea6b56)
 
+docker-compose up -d
+docker container ls
+echo $(docker-machine ip)
+![image](https://github.com/Tomalison/Docker/assets/96727036/b0a13c51-45aa-49b0-82bd-8c53d0758aac)
 
+docker-compose down 把所有container給下架
 
+開啟compose檔案繼續編輯，不同container都可以一起起起來
 
+version: "3.7" (版本)
+services:
+ myweb:
+   bulid:
+     context: .
+     args:
+       whoami: "Tony"
+    image: uopsdod/myweb:latest
+    ports:
+      - "8080:80"
+  myweb2:
+    bulid:
+      context: .
+      args:
+        whoami: "Chris"
+    image: uopsdod/myweb1:latest
+    ports:
+      - "8081:80"
+  myweb3:
+    bulid:
+      context: .
+      args:
+        whoami: "Jane"
+    image: uopsdod/myweb2:latest
+    ports:
+      - "8082:80"
 
+docker-compose.yml
+確認一下
+docker-compose build --no-cach
+docker images
+docker-compose up -d
+docker container ls
+
+docker-compose down
+
+再回到檔案，用最後一個語法
+version: "3.7" (版本)
+services:
+ myweb:
+   bulid:
+     context: .
+     args:
+       whoami: "Tony"
+    image: uopsdod/myweb:latest
+    ports:
+      - "8080:80"
+  myweb2:
+    bulid:
+      context: .
+      args:
+        whoami: "Chris"
+    image: uopsdod/myweb1:latest
+    ports:
+      - "8081:80"
+  myweb3:
+    bulid:
+      context: .
+      args:
+        whoami: "Jane"
+    image: uopsdod/myweb2:latest
+    ports:
+      - "8082:80"
+  myweb4:
+    image: uopsdod/myweb:latest 
+    ports:
+      - "8083:80"
+(這樣可以用現有的image去起一個container)
+本次學習service 可以用compose一次啟起多個不同的container
+
+Networks
+ls
+cat Dockerfile
+cat docker-compose.yml
+docker-compose down
+docker-compose up -d
+docker container ls
+
+docker network ls
+docker daemon會自動幫我們建一個mydockerfile001_default的bridge網路，而這名稱來自於我們來源目錄
+並且將我們的container都放到這個bridge當中
+docker network inspect
+docker-compose down
+clear
+
+回檔案，
+version: "3.7" (版本)
+services:
+ myweb:
+   bulid:
+     context: .
+     args:
+       whoami: "Tony"
+    image: uopsdod/myweb:latest
+    ports:
+      - "8080:80"
+    networks:
+      - mybridge001
+  myweb2:
+    bulid:
+      context: .
+      args:
+        whoami: "Chris"
+    image: uopsdod/myweb1:latest
+    ports:
+      - "8081:80"
+    networks:
+      - mybridge001
+  myweb3:
+    bulid:
+      context: .
+      args:
+        whoami: "Jane"
+    image: uopsdod/myweb2:latest
+    ports:
+      - "8082:80"
+    networks:
+      - mybridge001
+  myweb4:
+    image: uopsdod/myweb:latest 
+    ports:
+      - "8083:80"
+    networks:
+      - mybridge002
+networks:
+  mybridge001:
+  mybridge002:
+回terminal
+docker-compose build --no-cache
+docker-compose up -d
+![image](https://github.com/Tomalison/Docker/assets/96727036/06adec49-6bae-4e78-abb2-ca72fc39e282)
+
+docker network inspect Bridge名稱 就可以看到剛剛放的Container
+![image](https://github.com/Tomalison/Docker/assets/96727036/009a0a0b-59fe-4f95-ab18-5272a6018d07)
+
+Volumes實作
+docker-compose down
+clear
+ls
+docker volume ls
+
+回檔案
+version: "3.7" (版本)
+services:
+ myweb:
+   bulid:
+     context: .
+     args:
+       whoami: "Tony"
+    image: uopsdod/myweb:latest
+    ports:
+      - "8080:80"
+    networks:
+      - mybridge001
+  myweb2:
+    bulid:
+      context: .
+      args:
+        whoami: "Chris"
+    image: uopsdod/myweb1:latest
+    ports:
+      - "8081:80"
+    networks:
+      - mybridge001
+  myweb3:
+    bulid:
+      context: .
+      args:
+        whoami: "Jane"
+    image: uopsdod/myweb2:latest
+    ports:
+      - "8082:80"
+    networks:
+      - mybridge001
+  myweb4:
+    image: uopsdod/myweb:latest 
+    ports:
+      - "8083:80"
+    networks:
+      - mybridge002
+  myweb5:
+    image: uopsdod/myweb:latest 
+    ports:
+      - "8084:80"
+    networks:
+      - mybridge002     
+    volumes:
+      - mainpage-vol002:var/www/localhost/htdocs/ (container的目錄位置)
+networks:
+  mybridge001:
+  mybridge002:
+volumes:
+  mainpage-vol002:
+回terminal
+docker-compose build --no-cache
+clear
+docker-compose up -d
+docker volume ls
+docker container ls
+echo $(docker-machine ip)
+到瀏覽器 打上ip:8084
+docker container ls
+docker exec -it ContainerID /bin/sh
+ls
+cat index.html
+echo "I made this change in 1997" >> index.html
+exit
+docker-compose down
+clear
+docker-compose up -d
+這時剛剛新加的echo就會留在myweb5，原因是我們有加了一個volume_mainpage-vol002進去使用
+在container消失啟動都還是會存在。
+![image](https://github.com/Tomalison/Docker/assets/96727036/46af552f-3617-4b02-b360-1e01b5afa05d)
+IT人員建立server、管理人員權限、管理網路流通、
+這樣的建造方式會將成本壓在人身上而不是程式碼身上
+IT環境較難掌握
+Infrastructure as Code
+讓整體的IT環境濃縮在一個設定檔之中
+![image](https://github.com/Tomalison/Docker/assets/96727036/82b91560-502a-4d8a-af68-eb0f5ce7a189)
+透過一鑑部屬，用同一個設定檔，可以啟起一個全新且完整的IT環境
+透過這個方式，只要少數IT人員去維護，跟版本控制
+第一種在一個小層級上，可以用容器化的方式去實作，Docker Compose就是其中之一。他可以快速部屬好幾個Container，而每個Container之中。可以進行所謂的前端、後端、資料庫的部暑。
+
+另外一個選擇是去雲端上面進行部屬 (ex Cloud Formation
+![image](https://github.com/Tomalison/Docker/assets/96727036/5bb4c554-6f90-445b-9a6e-679953f31fcd)
+寫一個單一設定檔，快速部屬多個VM，在每個虛擬機之中快速部屬各自的應用程式。
+![image](https://github.com/Tomalison/Docker/assets/96727036/0e58dcd3-46aa-481e-b959-32b70f281dda)
+
+![image](https://github.com/Tomalison/Docker/assets/96727036/2e9b7ad6-ccff-497f-ad66-a2efccf832af)
+![Uploading image.png…]()
+
+簡化專案佈版流程
