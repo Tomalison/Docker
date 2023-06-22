@@ -1,4 +1,3 @@
-![image](https://github.com/Tomalison/Docker/assets/96727036/7ee89255-0a65-4413-b702-f6d2e69ea8ba)# Docker
 紀錄Docker學習紀錄
 
 容器化技術，部屬歷史，硬體主機>作業系統>多個Application>當某個App出錯，他會影響其他App>為了解決這個問題，用多台硬體主機解決>後來出現VM(虛擬主機)，一台硬體，會有一個作業系統與一個Hypervisor，在這一層可以建立多個VM，在其中在建立多個OS與App
@@ -291,5 +290,171 @@ echo $(docker-machine ip)
 ![image](https://github.com/Tomalison/Docker/assets/96727036/91847e24-25d9-4306-8d6a-82661d12c270)
 
 Docker網路模式介紹
-none bridge / container / host
+none/ bridge / container / host
 ![image](https://github.com/Tomalison/Docker/assets/96727036/afa332a6-064d-4868-a48c-aa9846181d4a)
+Bridge
+IP其實是一個有限的座位，容器要跟Network要IP來使用，如果隸屬不同的Bridge，那兩個容器是無法互通的。屬於同一個網路空間就可以彼此溝通
+Container
+例如容器3對應到容器02-1，那就會拿到同一個標籤，同一個IP。
+host
+例如容器4會跟Linux VM Network要一個IP，那他就可以跟Linux主機其他程式互通網路。
+
+Docker網路介紹None模式
+先將一個base image抓下來，bocker pull alpine
+docker network ls
+docker run -d --network none --name none-mode alpine tail -f /dev/null
+docker container ls
+docker network inspect none
+透過這個指令我們就能明確知道我們已經將這個container放到這個none網路中
+驗證 docker exec -it ContainerID /bin/sh
+id addr ls
+可以看到只能連自己 127.0.0.1
+![image](https://github.com/Tomalison/Docker/assets/96727036/3c52107c-add5-4891-acb0-fa54173cdb4f)
+
+Docker網路介紹Bridge模式
+
+docker network ls 查看
+docker network create --driver bridge my-bridge
+創建一個自己的bridge
+docker network inspect my-bridge
+![image](https://github.com/Tomalison/Docker/assets/96727036/1bb61535-1165-44a2-b8b4-ffb74e2d6f23)
+
+可以看到Subnet的網路空間，是我們my-bridge的網路空間
+建立一個新的Container 然後放到我們my-bridge的網路空間
+docker run -d --network my-bridge --name bridge-mode001 alpine tail -f /dev/null
+docker container ls
+docker network inspect my-bridge
+![image](https://github.com/Tomalison/Docker/assets/96727036/63443865-4c5d-4d73-a518-d99e665c9450)
+
+先複製Containers裡的ID
+docker exec -it ContainerID /bin/sh
+ip addr ls 也可以看到剛剛my-bridge裡配了一組IP來給這個Container使用(如下圖
+![image](https://github.com/Tomalison/Docker/assets/96727036/3ab4a670-dd6e-4f58-96e3-b198308051de)
+用ping 8.8.8.8(google)
+可以看到可以連到外網
+exit>>clear
+我們要再來建造一個Container放到同樣是my-bridge的網路空間裡面
+docker run -d --network my-bridge --name bridge-mode002 alpine tail -f /dev/null
+docker container ls
+docker network inspect my-bridge
+就可以看到剛剛的bridge-mode002
+docker exec -it ContainerID
+ip addr ls
+![image](https://github.com/Tomalison/Docker/assets/96727036/05293408-14e1-45c4-b45a-6e6a3499be9f)
+接下來要測試這兩個Container可不可以互通
+我們可以在剛剛.3的網段ping .2的網段
+![image](https://github.com/Tomalison/Docker/assets/96727036/110ff526-e8b2-4b07-97ab-a8ae83a5b278)
+
+可以成功收到回應，代表剛剛的bridge-mode001跟bridge-mode002是可以彼此互通。
+再來要在建一個container放到另一個bridge之中
+首先
+docker network create --driver bridge their-bridge
+docker run -d --network their-bridge --name bridge-mode003 alpine tail -f /dev/null
+docker container ls
+docker network inspect
+
+這次他的Subnet屬於172.21.0.0/16
+bridge-mode003 他的ID 是172.21.0.2/16
+![image](https://github.com/Tomalison/Docker/assets/96727036/e05a1da0-2788-4501-a5d4-7ce25ed47fda)
+
+接下來先複製他的ContainerID
+docker exec -it ContainerID /bin/sh
+ip addr ls
+ping 8.8.8.8 CTRL+C結束
+ping 172.20.0.2 這網路就不通
+不同Bridge之間的網路是不會互通的
+那我現在要將003加到001/002所屬網路中呢
+用這個指令
+docker network connect my-bridge bridge-mode003
+docker network inspect my-bridge
+![image](https://github.com/Tomalison/Docker/assets/96727036/520b3983-5ac4-44b0-afe3-6a65c855a748)
+
+他的IP 如圖變成172.20.0.4/16，這時候bridge-mode003就有兩個IP
+docker exec -it ContainerID /bin/sh
+ping 172.20.0.2就可以通了
+
+Docker網路介紹Container模式
+docker container ls
+docker run -d --network container:bridge-mode001 --name container-mode001 alpine tail -f /dev/null
+docker network inspect
+![image](https://github.com/Tomalison/Docker/assets/96727036/4a202885-2c0d-40cc-84b6-6cdbb4033531)
+可以看到我們container還是維持三個 001/002/003
+沒有看到剛剛新創的container-mode001，原因是他是去copy現有的container網路設定
+如果你要去連線container-mode001
+docker exec -it ContainerID /bin/sh
+ip addr ls 就可以看到他的IP跟001的一樣
+![image](https://github.com/Tomalison/Docker/assets/96727036/f4ec0928-0c5b-47fa-8502-e7c6ff3571f0)
+
+Docker網路介紹Host模式
+cat Dockerfile
+![image](https://github.com/Tomalison/Docker/assets/96727036/3e42285a-2c62-4e46-9e40-b40eb3f95fb4)
+docker build -t uopsdod/my-apache .
+docker images
+docker run -d --network host --name my-apache uopsdod/my-apache
+docker container ls
+docker exec -it ContainerID /bin/sh
+docker network inspect host
+![image](https://github.com/Tomalison/Docker/assets/96727036/390810f4-8675-427e-99f7-b26896e6f342)
+host mode的意思就是我們的Container不再屬於他們Container那一層，直接把他當成跟他的VM Linux host一模一樣的網路世界。
+netstat -tulpn
+exit
+echo $(docker-machine ip)
+這個時候就可以用VM上的IP與埠號 連到之前那個Container
+![image](https://github.com/Tomalison/Docker/assets/96727036/e81b3adc-138b-4ad2-89c2-02460a1bd6fc)
+192.168.99.100:80
+
+建立與使用Docker Volume
+
+![image](https://github.com/Tomalison/Docker/assets/96727036/561ec210-e1ee-4901-ab0b-f3fd186c8d29)
+
+容器存在Container Disk中當容器砍掉他也會清掉她的空間
+如果將容器存在Linux的Volume01 或Volume02那他容器砍掉，還是會存在Volume中
+
+cat Dockerfile
+docker build -t uopsdod/apache001 .
+docker run -d -p 8080:80 uopsdod/apache001
+docker container ls
+echo $(docker-machine ip)
+docker exec -it ContainerID /bin/sh
+ls
+cat index.html
+echo "I made this change in 1990" >> index.html
+exit
+docker stop ContainerID
+docker rm ContainerID
+在啟動一次docker run
+就可以看到剛剛echo的那段文字不見了
+代表他剛剛存的disk空間都會被清掉
+如果我們想要保存剛剛container的disk資料，我們要用下面的docker volume
+dpcker volume ls
+docker volume create mainpage-vol
+docker volume inspect mainpage-vol
+![image](https://github.com/Tomalison/Docker/assets/96727036/a6f36bd5-2e1e-4841-acd3-057f1766840f)
+docker run -d -p 8080:80 -v mainpage-vol:/var/www/localhost/htdocs/(container裡面的folder) uopsdod/apache001
+冒號左邊是VM linux disk的空間，右邊是Container的disk空間。把兩個mapping起來。
+
+docker run -d -p 8081:80 -v mainpage-vol:/var/www/localhost/htdocs/ uopsdod/apache001
+docker container ls
+![image](https://github.com/Tomalison/Docker/assets/96727036/ba273b9f-8880-4f94-a5ba-7a22adcdedb6)
+docker exec -it ContainerID /bin/sh
+ls
+cat index.html
+echo "I made this change in 1997" >> index.html
+exit
+docker stop ContainerID
+docker rm ContainerID
+docker run -d -p 8081:80 -v mainpage-vol:/var/www/localhost/htdocs/ uopsdod/apache001
+看一下之前加的echo是否還存在
+docker container ls
+![image](https://github.com/Tomalison/Docker/assets/96727036/996b8964-af88-49c6-9e85-b55ecff3b89d)
+
+這次就留下了改變。
+![Uploading image.png…]()
+
+建立與使用Docker Compose
+Services / Networks / Volumes /
+
+
+
+
+
