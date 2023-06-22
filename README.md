@@ -1,4 +1,4 @@
-# Docker
+![image](https://github.com/Tomalison/Docker/assets/96727036/7ee89255-0a65-4413-b702-f6d2e69ea8ba)# Docker
 紀錄Docker學習紀錄
 
 容器化技術，部屬歷史，硬體主機>作業系統>多個Application>當某個App出錯，他會影響其他App>為了解決這個問題，用多台硬體主機解決>後來出現VM(虛擬主機)，一台硬體，會有一個作業系統與一個Hypervisor，在這一層可以建立多個VM，在其中在建立多個OS與App
@@ -143,13 +143,153 @@ ENTRYPOINT ["httpd", "-D", "FOREGROUND"]
 
 Dockerfile情境語法ENV
 
+From alpine:latest
+MAINTAINER MyName
+RUN apk --update add apaches2
+RUN rm -rf /var/cache/apk/*
+RUN cd /var/www/localhost/htdpcs && pwd
+ENTRYPOINT ["httpd"]
+CMD ["-D", "FOREGROUND"]
+
+RUN之間是獨立的
+在一個RUN裡面是一個臨時性的Container
+那如果要在同一個RUN在不同行執行，那要在指令中加上\
+RUN cd /var/www/localhost/htdpcs \ 
+    && pwd
+接下來要對 首頁index.html做事，我們將pwd改成echo
+RUN cd /var/www/localhost/htdpcs \ 
+    && echo "<h3>I am Tom Round 01<h3>" >> index.html
+RUN cd /var/www/localhost/htdpcs \ 
+    && echo "<h3>I am Tom Round 02<h3>" >> index.html
+RUN cd /var/www/localhost/htdpcs \ 
+    && echo "<h3>I am Tom Round 03<h3>" >> index.html
+同樣的行為做三次，希望在首頁多出這幾行
+docker build-t uopsdod/005 .
+docker images
+docker run -d -p 8080:80 uopsdod/005
+docker container ls
+echo $(docker-machine ip)
+將IP跟埠號貼到網頁上，在網頁上就可以看到剛剛加的echo內容
+
+但如果想要將這些相同的路徑放在一起則用
+ENV myworkdir /var/www/localhost/htdocs
+RUN cd ${myworkdir} \ 
+    && echo "<h3>I am Tom Round 01<h3>" >> index.html
+RUN cd ${myworkdir} \ 
+    && echo "<h3>I am Tom Round 02<h3>" >> index.html
+RUN cd ${myworkdir} \ 
+    && echo "<h3>I am Tom Round 03<h3>" >> index.html
+
+  這就是ENV的功用
+
+Dockerfile情境式語法介紹 Workdir
+
+![image](https://github.com/Tomalison/Docker/assets/96727036/48e8ebac-6d46-4aa8-9b8d-35195bfb1c9d)
+在剛剛的範例中，我們現在加上一個workdir
+From alpine:latest
+ENV myworkspace /var/www/localhost/htdocs
+RUN apk --update add apaches2
+RUN rm -rf /var/cache/apk/*
+RUN cd ${myworkspace} \ 
+    && echo "<h3>I am Tom Round 01<h3>" >> index.html
+RUN cd ${myworkspace} \ 
+    && echo "<h3>I am Tom Round 02<h3>" >> index.html
+RUN cd ${myworkspace} \ 
+    && echo "<h3>I am Tom Round 03<h3>" >> index.html
+ENTRYPOINT ["httpd", "-D", "FOREGROUND"]
+
+如果我們想要把這個重複的CD過程給取代掉
+我們可以將上面的程式改成
+From alpine:latest
+ENV myworkspace /var/www/localhost/htdocs
+WORKDIR ${myworkspace}  
+RUN apk --update add apaches2
+RUN rm -rf /var/cache/apk/*
+RUN echo "<h3>I am Tom Round 01<h3>" >> index.html
+RUN echo "<h3>I am Tom Round 02<h3>" >> index.html
+RUN echo "<h3>I am Tom Round 03<h3>" >> index.html
+ENTRYPOINT ["httpd", "-D", "FOREGROUND"]
+
+直接將預設目錄指到這個myworkspace
+後面的RUN就用每一個路徑都在打一次了
+
+Dockerfile情境式語法介紹 ARG (argument)
+arg可以讓我們在docker build的時候去改變這個變數
+呈上範例，想將重複詞句
+From alpine:latest
+ENV myworkspace /var/www/localhost/htdocs
+WORKDIR ${myworkspace}  
+ARG whoami=Tom
+RUN apk --update add apaches2
+RUN rm -rf /var/cache/apk/*
+RUN echo "<h3>I am ${whoami} Round 01<h3>" >> index.html
+RUN echo "<h3>I am ${whoami} Round 02<h3>" >> index.html
+RUN echo "<h3>I am ${whoami} Round 03<h3>" >> index.html
+ENTRYPOINT ["httpd", "-D", "FOREGROUND"]
+![image](https://github.com/Tomalison/Docker/assets/96727036/6f036675-d0e4-4a39-8ff4-1b919ee7e83d)
+接下來想改變
+用同一個dockerfile建造不童的docker image
+docker build --build-arg whoami=Tony -t uopsdod/007 .
+clear
+docker images
+docker run -d -p 8089:80 uopsdod/007
+docker container ls
+echo $(docker-machine ip)
+接下來在網頁上就可以看到以下圖
+![image](https://github.com/Tomalison/Docker/assets/96727036/988c4808-7c08-4c62-beb6-45b5d029235c)
 
 
+Dockerfile情境式語法介紹COPY
 
+課程提供的Content.txt檔先放到跟Dockerfile同個資料夾
+![image](https://github.com/Tomalison/Docker/assets/96727036/4c14b18f-69d2-49be-ba19-18a93fca5f54)
+Terminal中打上ls就可以看到這兩個檔案
+我現在想要將我剛剛的content的book list資訊放到index.html裡面
+就可以在首頁看到book list
 
+Copy ./content.txt ./
+RUN ls -l ./
+RUN cat ./content.txt ./ >> index.html
+現在當前目錄是Linux VM空間docker daemon會把當前的目錄下的content.txt檔案複製一個到container空間的當前目錄下
+而目前的當前目錄就是剛剛在Dockerfile定義的workdir這裡
+![image](https://github.com/Tomalison/Docker/assets/96727036/de015053-f3d0-4f87-b330-761142de663a)
+![image](https://github.com/Tomalison/Docker/assets/96727036/71037951-3330-4535-9bca-3096d2af6a5b)
 
+將任意Container變成Docker Image
+![image](https://github.com/Tomalison/Docker/assets/96727036/0cd62f82-afbd-4957-bee4-a13340b6d716)
 
+如何把Container轉換成Image
+首先打上ls 
+cat Dockerfile
+docker build -t uopsdod/myimage .
+docker images
+docker run -d -p 8080:80 uopsdod/myimage
+echo $(docker-machine ip)
 
+docker container ls
+docker exec -it ContainerID /bin/sh
+![image](https://github.com/Tomalison/Docker/assets/96727036/1a8ff995-13ea-465a-833c-b6ac1f121fe4)
+ls
+cat index.html
+echo "I am going to turn this container into an new image" >> index.html
+就可以看到首頁篩入資訊
+接下來先離開這個Container > exit
+將這個運行中的Container轉換成Image
+複製ContainerID
+先打上docker commit ContainerID uopsdod/containertoimage
+![image](https://github.com/Tomalison/Docker/assets/96727036/ce363660-99fd-49e5-9a64-03e5e80e3d5f)
 
+docker container ls
+先停止與清理Container
+docker stop ContainerID
+docker rm ContainerID
+clear
 
+docker images
+docker run -d -p 8080:80 uopsdod/containertoimage
+echo $(docker-machine ip)
+![image](https://github.com/Tomalison/Docker/assets/96727036/91847e24-25d9-4306-8d6a-82661d12c270)
 
+Docker網路模式介紹
+none bridge / container / host
+![image](https://github.com/Tomalison/Docker/assets/96727036/afa332a6-064d-4868-a48c-aa9846181d4a)
