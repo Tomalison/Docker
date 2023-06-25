@@ -740,7 +740,10 @@ echo $(docker-machine ip) 到這邊就佈署好了
 cat .env  (可以看到幾個環境參數被放上去使用)
 開啟docker-compose.yml檔案解析
 ![image](https://github.com/Tomalison/Docker/assets/96727036/5f765bc2-69c2-420d-ab29-2738be5fa0e3)
-![Uploading image.png…]()
+![image](https://github.com/Tomalison/Docker/assets/96727036/1b8a492c-ad60-4a06-85bf-94edc1b03e48)
+![image](https://github.com/Tomalison/Docker/assets/96727036/36023aea-45bb-4c3c-a135-966fcbcc3dbe)
+![1687660939798](https://github.com/Tomalison/Docker/assets/96727036/c8f26e52-e17b-4aa9-a72f-4d57d1bf74fb)
+![image](https://github.com/Tomalison/Docker/assets/96727036/60056243-af82-4961-b30d-d136ba9399a7)
 
 version: "3.7"
 servuces:   #以下規劃3個容器
@@ -748,26 +751,37 @@ servuces:   #以下規劃3個容器
     container_name: mydb
     build:
       context: ./db  #當下目錄之下的Db子目錄_裡面有一個Dockerfile檔案(上圖)
-    image: uopsdod/mysql-db-01
+    image: uopsdod/mysql-db-01 #docker hub帳號配上image名稱
     ports:
       - "3306:3306"
     environment:
       - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
       - MYSQL_USER=${MYSQL_USER}
       - MYSQL_PASSWORD=${MYSQL_PASSWORD}
-      - MYSQL_DATABASE=${MYSQL_DATABASE}
+      - MYSQL_DATABASE=${MYSQL_DATABASE} #這些值是初始化db得時候去使用的，會幫我們建立第一個使用者跟件第一個database
     networks:
       my-bridge-001:
     volumes:
-      - db-data:/var/lib/mysql
-  java-app:
+      - db-data:/var/lib/mysql  #db-data的空間 mapping到容器裡面的/var/lib/mysql空間 容器消失之後，還能保存我們db資料
+  java-app:                    
     container_name: myapp
     build:
-      context: ./app
+      context: ./app  
+                     #程式專案的資料夾中有其所需的程式檔案，也有一個Dockerfile，裡面有maven這個指令，ENV環境變數使用 
+                     #Dockerfile中
+                     #DB_HOST_iP=localhost可以透過同一個bridge空間，去連線到db server得位置
+                     #並預設container預設路徑
+                     #COPY把當下所有Linux VM目錄位置的東西全部COPY一份到Container裡
+                     #再COPY一個叫做wiat-for-it的shell指令
+                     #Run一個chmod指令 加上一個新權限讓他可以被執行，可以像Windows的exe檔直接啟用的那種意思
+                     #再Run一個maven指令，特別用在java專案上，把我們java專案打包成一包，可以被佈署的東西
+                     #最後的CMD則是規範我們docker container起來之後，首先要執行的指令是甚麼。
     image: uopsdod/java-app-01
     ports:
       - "8080:8080"
-    command: ./wait-for-it.sh mydb:3306 -- java -jar target/accessing-data-mysql-0.0.1-SNAPSHOT.jar
+    command: ./wait-for-it.sh mydb:3306 -- java -jar target/accessing-data-mysql-0.0.1-SNAPSHOT.jar 
+              #再container再啟動時等待第一批container啟動好後再執行。
+              #mydb:3306是docker空間的DNS name，這會一值偵測啟動沒，而啟動後會執行會面那段java，將專案起起來。只有在同一個networks才能呼叫
     environment:
       - DB_HOST_IP=mydb
     networks:
@@ -775,9 +789,9 @@ servuces:   #以下規劃3個容器
   react-web:
     container_name: myweb
     build:
-      context: ./web
+      context: ./web  #裡面的Dockerfile 的CMD["npm","start"]是我們啟動react專案的方式
     image: uopsdod/react-web-01
-    command: ./wait-for-it.sh ${API_HOST_IP}:8080 -- npm start
+    command: ./wait-for-it.sh ${API_HOST_IP}:8080 -- npm start  #API_HOST_IP指的是我們Linux VM的IP
     ports:
       - "3000:3000"
     environment:
@@ -786,5 +800,8 @@ servuces:   #以下規劃3個容器
 networks:
   my-bridge-001:
 volumes:
-  db-date:
+  db-date: #建造一個新Volume叫做db-data
+![Uploading image.png…]()
+可以用docker volume ls  / docker network ls / docker container ls / docker network inspect ContainerIP
 
+建立乾淨測試環境實作示範
