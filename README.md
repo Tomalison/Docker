@@ -801,7 +801,89 @@ networks:
   my-bridge-001:
 volumes:
   db-date: #建造一個新Volume叫做db-data
-![Uploading image.png…]()
+![image](https://github.com/Tomalison/Docker/assets/96727036/a83d7c81-d545-4544-91e2-edf13b8f20c3)
 可以用docker volume ls  / docker network ls / docker container ls / docker network inspect ContainerIP
 
 建立乾淨測試環境實作示範
+![image](https://github.com/Tomalison/Docker/assets/96727036/6b040d73-dc9a-4fdc-8ee3-e4a3a3834e34)
+
+因為要清掉測試環境，所以原本的docker-compose.yml的 volumes:要清掉
+![image](https://github.com/Tomalison/Docker/assets/96727036/74150dec-1b16-480b-85b7-4b938251d030)
+再db資料夾中，有一個sql-scripts，測試資料有一組Insert into table讓我們的測試資料塞進資料庫，並在多塞七組測試資料進去
+因為有改db測試資料語法 我們要重新build一遍
+先docker-compose down關閉 再docker-compose build --no-cache
+然後再docker-compose up -d再背景執行 echo $(docker-machine ip) + docker container ls
+![image](https://github.com/Tomalison/Docker/assets/96727036/738f8c7e-6031-46de-9283-04ab3ecac4cc)
+
+如果我們要再做第二輪的測試，我們就打上docker down 再 docker-compose up -d 透過這個方式就可不斷建立新的測試環境
+
+實作跨平台佈署
+![image](https://github.com/Tomalison/Docker/assets/96727036/f87aacf6-fe70-442d-b3eb-abcfc4eda72a)
+
+image上傳到Docker hub / 蘋果新的m1/m2要多考慮CPU架構(ARM的CPU架構) 
+登入
+![image](https://github.com/Tomalison/Docker/assets/96727036/3bdd74ea-623a-4641-afcc-b49634ac838a)
+
+上傳到Docker hub
+docker-compose push  這只能建立你這個CPU的規格image
+所以我們打開Docker Engine 看到Settings這邊 >>Features in development>>Experimental features確認Access experimental features有打勾
+
+先刪掉所有Image
+docker rmi $(docker images -a -q)
+docker buildx create --use --name mybuilder可以一次建立多個CPU規格的image
+docker buildx ls
+docker buildx build --platform linux/amd64,linux/arm64 -t uopsdod/mysql-db-01 --push ./db
+![image](https://github.com/Tomalison/Docker/assets/96727036/cac4900d-e8a1-4478-b7a4-7a1c0b6e89bf)
+![image](https://github.com/Tomalison/Docker/assets/96727036/49b48d7a-d00c-4cf7-9882-fc3f73f0d81c)
+docker buildx build --platform linux/amd64,linux/arm64 -t uopsdod/java-app-01 --push ./app
+docker buildx build --platform linux/amd64,linux/arm64 -t uopsdod/react-web-01 --push ./web
+
+--實作2
+MAC
+docker pull uopsdod/mysql-db-01
+docker pull uopsdod/java-app-01
+docker pull uopsdod/react-web-01
+抓下三個image
+docker-compose up -d
+echo $(docker-machine ip)  / docker-compose down
+
+如何一次將所有images都抓下來
+docker images 
+docker-compose pull
+
+Linux
+sudo yum install -y git
+sudo git clone 專案github位置
+![image](https://github.com/Tomalison/Docker/assets/96727036/db46327f-0ccd-4872-99ca-cf0f125713dc)
+cd 專案目錄位置/
+
+![image](https://github.com/Tomalison/Docker/assets/96727036/ae02057c-3f84-4e19-975c-e84e41117661)
+
+要將API_HOST_IP改為Linux最外的IP curl http://checkip.amazonaws.com 看到public ip
+vi .env 編輯檔案(a)，將IP改掉
+![image](https://github.com/Tomalison/Docker/assets/96727036/cac15ba0-4406-4208-88d6-60663471c8b5)
+編輯完後按下ESC，然後按下 :wq
+![image](https://github.com/Tomalison/Docker/assets/96727036/2380cd8a-a453-4b4c-832d-657de6cef77e)
+sudo docker images
+sudo /usr/local/bin/docker-compose pull
+sudo docker images
+sudo /usr/local/bin/docker-compose up -d
+sudo docker container ls
+
+Windows佈署示範
+先將範例檔案放到Program Files>Docker Toolbox
+cd 檔案目錄/
+ls -a
+cat .env
+echo $(docker-machine ip)
+![Uploading image.png…]()
+
+docker images
+docker-compose pull
+docker images
+docker-compose up -d
+docker container ;s
+echo $(docker-machine ip)
+docker-compose down
+
+建立與使用Docker Swarm
