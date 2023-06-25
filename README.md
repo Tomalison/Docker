@@ -714,6 +714,77 @@ Infrastructure as Code
 ![image](https://github.com/Tomalison/Docker/assets/96727036/0e58dcd3-46aa-481e-b959-32b70f281dda)
 
 ![image](https://github.com/Tomalison/Docker/assets/96727036/2e9b7ad6-ccff-497f-ad66-a2efccf832af)
-![Uploading image.png…]()
+![image](https://github.com/Tomalison/Docker/assets/96727036/80ce8da5-4f37-459b-9f3b-dd73940199f6)
+
 
 簡化專案佈版流程
+![image](https://github.com/Tomalison/Docker/assets/96727036/4c979caf-1cbc-4402-80a0-d9c1613b7b93)
+![image](https://github.com/Tomalison/Docker/assets/96727036/fcb5553f-f755-4119-a3de-493c30fc614b)
+
+解壓縮Zip檔(課程範例)，開啟docker daemon程式
+
+先cd docker-demo/tmp/ (檔案的目錄位置)
+ls (查看本地有甚麼檔案目錄) -a(-a可以看到隱藏的檔案)
+在cd 到剛剛解壓縮的目錄底下 ex: docker-course-grand-demo-compose-master (如下圖)
+![image](https://github.com/Tomalison/Docker/assets/96727036/eb780ba2-c9ab-4a58-9596-e853091b10b9)
+ls (可以看到範例準備的app、db、docker-compose.yml、web)
+docker-compose build --no-cache 
+docker-compose up -d
+docker container ls
+先找出VM Linux的IP位置
+echo $(docker-machine ip) 到這邊就佈署好了
+先關掉專案 docker-compose down
+
+解析:
+![image](https://github.com/Tomalison/Docker/assets/96727036/29f74b45-0730-4cd5-b85d-0bd1330e1806)
+cat .env  (可以看到幾個環境參數被放上去使用)
+開啟docker-compose.yml檔案解析
+![image](https://github.com/Tomalison/Docker/assets/96727036/5f765bc2-69c2-420d-ab29-2738be5fa0e3)
+![Uploading image.png…]()
+
+version: "3.7"
+servuces:   #以下規劃3個容器
+  mysql-db:
+    container_name: mydb
+    build:
+      context: ./db  #當下目錄之下的Db子目錄_裡面有一個Dockerfile檔案(上圖)
+    image: uopsdod/mysql-db-01
+    ports:
+      - "3306:3306"
+    environment:
+      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
+      - MYSQL_USER=${MYSQL_USER}
+      - MYSQL_PASSWORD=${MYSQL_PASSWORD}
+      - MYSQL_DATABASE=${MYSQL_DATABASE}
+    networks:
+      my-bridge-001:
+    volumes:
+      - db-data:/var/lib/mysql
+  java-app:
+    container_name: myapp
+    build:
+      context: ./app
+    image: uopsdod/java-app-01
+    ports:
+      - "8080:8080"
+    command: ./wait-for-it.sh mydb:3306 -- java -jar target/accessing-data-mysql-0.0.1-SNAPSHOT.jar
+    environment:
+      - DB_HOST_IP=mydb
+    networks:
+      my-bridge-001:
+  react-web:
+    container_name: myweb
+    build:
+      context: ./web
+    image: uopsdod/react-web-01
+    command: ./wait-for-it.sh ${API_HOST_IP}:8080 -- npm start
+    ports:
+      - "3000:3000"
+    environment:
+      - REACT_APP_API_HOST_IP=${API_HOST_IP}
+
+networks:
+  my-bridge-001:
+volumes:
+  db-date:
+
