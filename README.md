@@ -330,7 +330,7 @@ RUN cat ./content.txt ./ >> index.html
 - 可以看到只能連自己 127.0.0.1
 ![image](https://github.com/Tomalison/Docker/assets/96727036/3c52107c-add5-4891-acb0-fa54173cdb4f)
 
-#### Docker網路介紹Bridge模式
+## Docker網路介紹Bridge模式
 
 - docker network ls 查看
 - docker network create --driver bridge my-bridge
@@ -354,131 +354,132 @@ RUN cat ./content.txt ./ >> index.html
 - exit>>clear
 - 我們要再來建造一個Container放到同樣是my-bridge的網路空間裡面
 - docker run -d --network my-bridge --name bridge-mode002 alpine tail -f /dev/null
-docker container ls
-docker network inspect my-bridge
-就可以看到剛剛的bridge-mode002
-docker exec -it ContainerID
-ip addr ls
+- docker container ls
+- docker network inspect my-bridge
+- 就可以看到剛剛的bridge-mode002
+- docker exec -it ContainerID
+- ip addr ls
 ![image](https://github.com/Tomalison/Docker/assets/96727036/05293408-14e1-45c4-b45a-6e6a3499be9f)
-接下來要測試這兩個Container可不可以互通
-我們可以在剛剛.3的網段ping .2的網段
+- 接下來要測試這兩個Container可不可以互通
+- 我們可以在剛剛.3的網段ping .2的網段
 ![image](https://github.com/Tomalison/Docker/assets/96727036/110ff526-e8b2-4b07-97ab-a8ae83a5b278)
 
-可以成功收到回應，代表剛剛的bridge-mode001跟bridge-mode002是可以彼此互通。
-再來要在建一個container放到另一個bridge之中
-首先
-docker network create --driver bridge their-bridge
-docker run -d --network their-bridge --name bridge-mode003 alpine tail -f /dev/null
-docker container ls
-docker network inspect
+- 可以成功收到回應，代表剛剛的bridge-mode001跟bridge-mode002是可以彼此互通。
+- 再來要在建一個container放到另一個bridge之中
+- 首先
+- docker network create --driver bridge their-bridge
+- docker run -d --network their-bridge --name bridge-mode003 alpine tail -f /dev/null
+- docker container ls
+- docker network inspect
 
-這次他的Subnet屬於172.21.0.0/16
-bridge-mode003 他的ID 是172.21.0.2/16
+- 這次他的Subnet屬於172.21.0.0/16
+- bridge-mode003 他的ID 是172.21.0.2/16
 ![image](https://github.com/Tomalison/Docker/assets/96727036/e05a1da0-2788-4501-a5d4-7ce25ed47fda)
 
-接下來先複製他的ContainerID
-docker exec -it ContainerID /bin/sh
-ip addr ls
-ping 8.8.8.8 CTRL+C結束
-ping 172.20.0.2 這網路就不通
-不同Bridge之間的網路是不會互通的
-那我現在要將003加到001/002所屬網路中呢
-用這個指令
-docker network connect my-bridge bridge-mode003
-docker network inspect my-bridge
+- 接下來先複製他的ContainerID
+- docker exec -it ContainerID /bin/sh
+- ip addr ls
+- ping 8.8.8.8 CTRL+C結束
+- ping 172.20.0.2 這網路就不通
+- 不同Bridge之間的網路是不會互通的
+- 那我現在要將003加到001/002所屬網路中呢
+- 用這個指令
+- docker network connect my-bridge bridge-mode003
+- docker network inspect my-bridge
 ![image](https://github.com/Tomalison/Docker/assets/96727036/520b3983-5ac4-44b0-afe3-6a65c855a748)
 
-他的IP 如圖變成172.20.0.4/16，這時候bridge-mode003就有兩個IP
-docker exec -it ContainerID /bin/sh
-ping 172.20.0.2就可以通了
+- 他的IP 如圖變成172.20.0.4/16，這時候bridge-mode003就有兩個IP
+- docker exec -it ContainerID /bin/sh
+- ping 172.20.0.2就可以通了
 
-Docker網路介紹Container模式
-docker container ls
-docker run -d --network container:bridge-mode001 --name container-mode001 alpine tail -f /dev/null
-docker network inspect
+## Docker網路介紹Container模式
+- docker container ls
+- docker run -d --network container:bridge-mode001 --name container-mode001 alpine tail -f /dev/null
+- docker network inspect
 ![image](https://github.com/Tomalison/Docker/assets/96727036/4a202885-2c0d-40cc-84b6-6cdbb4033531)
-可以看到我們container還是維持三個 001/002/003
-沒有看到剛剛新創的container-mode001，原因是他是去copy現有的container網路設定
-如果你要去連線container-mode001
-docker exec -it ContainerID /bin/sh
-ip addr ls 就可以看到他的IP跟001的一樣
+- 可以看到我們container還是維持三個 001/002/003
+- 沒有看到剛剛新創的container-mode001，原因是他是去copy現有的container網路設定
+- 如果你要去連線container-mode001
+- docker exec -it ContainerID /bin/sh
+- ip addr ls 就可以看到他的IP跟001的一樣
 ![image](https://github.com/Tomalison/Docker/assets/96727036/f4ec0928-0c5b-47fa-8502-e7c6ff3571f0)
 
-Docker網路介紹Host模式
-cat Dockerfile
+## Docker網路介紹Host模式
+- cat Dockerfile
 ![image](https://github.com/Tomalison/Docker/assets/96727036/3e42285a-2c62-4e46-9e40-b40eb3f95fb4)
-docker build -t uopsdod/my-apache .
-docker images
-docker run -d --network host --name my-apache uopsdod/my-apache
-docker container ls
-docker exec -it ContainerID /bin/sh
-docker network inspect host
+- docker build -t uopsdod/my-apache .
+- docker images
+- docker run -d --network host --name my-apache uopsdod/my-apache
+- docker container ls
+- docker exec -it ContainerID /bin/sh
+- docker network inspect host
 ![image](https://github.com/Tomalison/Docker/assets/96727036/390810f4-8675-427e-99f7-b26896e6f342)
-host mode的意思就是我們的Container不再屬於他們Container那一層，直接把他當成跟他的VM Linux host一模一樣的網路世界。
-netstat -tulpn
-exit
-echo $(docker-machine ip)
-這個時候就可以用VM上的IP與埠號 連到之前那個Container
+- host mode的意思就是我們的Container不再屬於他們Container那一層，直接把他當成跟他的VM Linux host一模一樣的網路世界。
+- netstat -tulpn
+- exit
+- echo $(docker-machine ip)
+- 這個時候就可以用VM上的IP與埠號 連到之前那個Container
 ![image](https://github.com/Tomalison/Docker/assets/96727036/e81b3adc-138b-4ad2-89c2-02460a1bd6fc)
-192.168.99.100:80
+- 192.168.99.100:80
 
-建立與使用Docker Volume
+## 建立與使用Docker Volume
 
 ![image](https://github.com/Tomalison/Docker/assets/96727036/561ec210-e1ee-4901-ab0b-f3fd186c8d29)
 
-容器存在Container Disk中當容器砍掉他也會清掉她的空間
-如果將容器存在Linux的Volume01 或Volume02那他容器砍掉，還是會存在Volume中
+- 容器存在Container Disk中當容器砍掉他也會清掉她的空間
+- 如果將容器存在Linux的Volume01 或Volume02那他容器砍掉，還是會存在Volume中
 
-cat Dockerfile
-docker build -t uopsdod/apache001 .
-docker run -d -p 8080:80 uopsdod/apache001
-docker container ls
-echo $(docker-machine ip)
-docker exec -it ContainerID /bin/sh
-ls
-cat index.html
-echo "I made this change in 1990" >> index.html
-exit
-docker stop ContainerID
-docker rm ContainerID
-在啟動一次docker run
-就可以看到剛剛echo的那段文字不見了
-代表他剛剛存的disk空間都會被清掉
-如果我們想要保存剛剛container的disk資料，我們要用下面的docker volume
-dpcker volume ls
-docker volume create mainpage-vol
-docker volume inspect mainpage-vol
+- cat Dockerfile
+- docker build -t uopsdod/apache001 .
+- docker run -d -p 8080:80 uopsdod/apache001
+- docker container ls
+- echo $(docker-machine ip)
+- docker exec -it ContainerID /bin/sh
+- ls
+- cat index.html
+- echo "I made this change in 1990" >> index.html
+- exit
+- docker stop ContainerID
+- docker rm ContainerID
+- 在啟動一次docker run
+- 就可以看到剛剛echo的那段文字不見了
+- 代表他剛剛存的disk空間都會被清掉
+- 如果我們想要保存剛剛container的disk資料，我們要用下面的docker volume
+- dpcker volume ls
+- docker volume create mainpage-vol
+- docker volume inspect mainpage-vol
 ![image](https://github.com/Tomalison/Docker/assets/96727036/a6f36bd5-2e1e-4841-acd3-057f1766840f)
-docker run -d -p 8080:80 -v mainpage-vol:/var/www/localhost/htdocs/(container裡面的folder) uopsdod/apache001
-冒號左邊是VM linux disk的空間，右邊是Container的disk空間。把兩個mapping起來。
+- docker run -d -p 8080:80 -v mainpage-vol:/var/www/localhost/htdocs/(container裡面的folder) uopsdod/apache001
+- 冒號左邊是VM linux disk的空間，右邊是Container的disk空間。把兩個mapping起來。
 
-docker run -d -p 8081:80 -v mainpage-vol:/var/www/localhost/htdocs/ uopsdod/apache001
-docker container ls
+- docker run -d -p 8081:80 -v mainpage-vol:/var/www/localhost/htdocs/ uopsdod/apache001
+- docker container ls
 ![image](https://github.com/Tomalison/Docker/assets/96727036/ba273b9f-8880-4f94-a5ba-7a22adcdedb6)
-docker exec -it ContainerID /bin/sh
-ls
-cat index.html
-echo "I made this change in 1997" >> index.html
-exit
-docker stop ContainerID
-docker rm ContainerID
-docker run -d -p 8081:80 -v mainpage-vol:/var/www/localhost/htdocs/ uopsdod/apache001
-看一下之前加的echo是否還存在
-docker container ls
+- docker exec -it ContainerID /bin/sh
+- ls
+- cat index.html
+- echo "I made this change in 1997" >> index.html
+- exit
+- docker stop ContainerID
+- docker rm ContainerID
+- docker run -d -p 8081:80 -v mainpage-vol:/var/www/localhost/htdocs/ uopsdod/apache001
+- 看一下之前加的echo是否還存在
+- docker container ls
 ![image](https://github.com/Tomalison/Docker/assets/96727036/996b8964-af88-49c6-9e85-b55ecff3b89d)
 
-這次就留下了改變。
+- 這次就留下了改變。
 ![image](https://github.com/Tomalison/Docker/assets/96727036/36b8cfd7-bffd-485e-94d1-226efea792ac)
 
-建立與使用Docker Compose
-Services / Networks / Volumes /
+## 建立與使用Docker Compose
+- Services / Networks / Volumes /
 ![image](https://github.com/Tomalison/Docker/assets/96727036/24aac696-f101-4f32-a9f9-82ffff46f92a)
-透過Compose可以將上面三個元素一起管理起來
+- 透過Compose可以將上面三個元素一起管理起來
 ![image](https://github.com/Tomalison/Docker/assets/96727036/ef6b7a01-5ab1-4a3c-a7df-28df6f96bbcd)
-ls
-cat Dockerfile
-touch docker-compose.yml
-找到檔案位置 開啟編輯器
+- ls
+- cat Dockerfile
+- touch docker-compose.yml
+- 找到檔案位置 開啟編輯器
+``` sh
 version: "3.7" (版本)
 services:
  myweb:
@@ -489,21 +490,23 @@ services:
     image: uopsdod/myweb:latest
     ports:
       - "8080:80"
-    這是我們要看到的docker compose第一個版本的樣子
-cat docker-compose.yml
-docker-compose build --no-cache
-docker images
+```
+- 這是我們要看到的docker compose第一個版本的樣子
+- cat docker-compose.yml
+- docker-compose build --no-cache
+- docker images
+
 ![image](https://github.com/Tomalison/Docker/assets/96727036/c5780e5f-e50e-4466-b0c4-5497e1ea6b56)
 
-docker-compose up -d
-docker container ls
-echo $(docker-machine ip)
+- docker-compose up -d
+- docker container ls
+- echo $(docker-machine ip)
 ![image](https://github.com/Tomalison/Docker/assets/96727036/b0a13c51-45aa-49b0-82bd-8c53d0758aac)
 
-docker-compose down 把所有container給下架
+- docker-compose down 把所有container給下架
 
-開啟compose檔案繼續編輯，不同container都可以一起起起來
-
+- 開啟compose檔案繼續編輯，不同container都可以一起起起來
+``` sh
 version: "3.7" (版本)
 services:
  myweb:
@@ -530,17 +533,18 @@ services:
     image: uopsdod/myweb2:latest
     ports:
       - "8082:80"
+```
+- docker-compose.yml
+- 確認一下
+- docker-compose build --no-cach
+- docker images
+- docker-compose up -d
+- docker container ls
 
-docker-compose.yml
-確認一下
-docker-compose build --no-cach
-docker images
-docker-compose up -d
-docker container ls
+- docker-compose down
 
-docker-compose down
-
-再回到檔案，用最後一個語法
+- 再回到檔案，用最後一個語法
+``` sh
 version: "3.7" (版本)
 services:
  myweb:
@@ -571,25 +575,27 @@ services:
     image: uopsdod/myweb:latest 
     ports:
       - "8083:80"
+``` sh
 (這樣可以用現有的image去起一個container)
-本次學習service 可以用compose一次啟起多個不同的container
+- 本次學習service 可以用compose一次啟起多個不同的container
 
-Networks
-ls
-cat Dockerfile
-cat docker-compose.yml
-docker-compose down
-docker-compose up -d
-docker container ls
+- Networks
+- ls
+- cat Dockerfile
+- cat docker-compose.yml
+- docker-compose down
+- docker-compose up -d
+- docker container ls
 
-docker network ls
-docker daemon會自動幫我們建一個mydockerfile001_default的bridge網路，而這名稱來自於我們來源目錄
-並且將我們的container都放到這個bridge當中
-docker network inspect
-docker-compose down
-clear
+- docker network ls
+- docker daemon會自動幫我們建一個mydockerfile001_default的bridge網路，而這名稱來自於我們來源目錄
+- 並且將我們的container都放到這個bridge當中
+- docker network inspect
+- docker-compose down
+- clear
 
-回檔案，
+- 回檔案，
+``` sh
 version: "3.7" (版本)
 services:
  myweb:
@@ -631,21 +637,23 @@ services:
 networks:
   mybridge001:
   mybridge002:
-回terminal
-docker-compose build --no-cache
-docker-compose up -d
+```
+- 回terminal
+- docker-compose build --no-cache
+- docker-compose up -d
 ![image](https://github.com/Tomalison/Docker/assets/96727036/06adec49-6bae-4e78-abb2-ca72fc39e282)
 
-docker network inspect Bridge名稱 就可以看到剛剛放的Container
+- docker network inspect Bridge名稱 就可以看到剛剛放的Container
 ![image](https://github.com/Tomalison/Docker/assets/96727036/009a0a0b-59fe-4f95-ab18-5272a6018d07)
 
-Volumes實作
-docker-compose down
-clear
-ls
-docker volume ls
+## Volumes實作
+- docker-compose down
+- clear
+- ls
+- docker volume ls
 
-回檔案
+- 回檔案
+``` sh
 version: "3.7" (版本)
 services:
  myweb:
@@ -697,73 +705,74 @@ networks:
   mybridge002:
 volumes:
   mainpage-vol002:
-回terminal
-docker-compose build --no-cache
-clear
-docker-compose up -d
-docker volume ls
-docker container ls
-echo $(docker-machine ip)
-到瀏覽器 打上ip:8084
-docker container ls
-docker exec -it ContainerID /bin/sh
-ls
-cat index.html
-echo "I made this change in 1997" >> index.html
-exit
-docker-compose down
-clear
-docker-compose up -d
-這時剛剛新加的echo就會留在myweb5，原因是我們有加了一個volume_mainpage-vol002進去使用
-在container消失啟動都還是會存在。
+```
+- 回terminal
+- docker-compose build --no-cache
+- clear
+- docker-compose up -d
+- docker volume ls
+- docker container ls
+- echo $(docker-machine ip)
+- 到瀏覽器 打上ip:8084
+- docker container ls
+- docker exec -it ContainerID /bin/sh
+- ls
+- cat index.html
+- echo "I made this change in 1997" >> index.html
+- exit
+- docker-compose down
+- clear
+- docker-compose up -d
+- 這時剛剛新加的echo就會留在myweb5，原因是我們有加了一個volume_mainpage-vol002進去使用
+- 在container消失啟動都還是會存在。
 ![image](https://github.com/Tomalison/Docker/assets/96727036/46af552f-3617-4b02-b360-1e01b5afa05d)
-IT人員建立server、管理人員權限、管理網路流通、
-這樣的建造方式會將成本壓在人身上而不是程式碼身上
-IT環境較難掌握
-Infrastructure as Code
-讓整體的IT環境濃縮在一個設定檔之中
+- IT人員建立server、管理人員權限、管理網路流通、
+- 這樣的建造方式會將成本壓在人身上而不是程式碼身上
+- IT環境較難掌握
+- Infrastructure as Code
+- 讓整體的IT環境濃縮在一個設定檔之中
 ![image](https://github.com/Tomalison/Docker/assets/96727036/82b91560-502a-4d8a-af68-eb0f5ce7a189)
-透過一鑑部屬，用同一個設定檔，可以啟起一個全新且完整的IT環境
-透過這個方式，只要少數IT人員去維護，跟版本控制
-第一種在一個小層級上，可以用容器化的方式去實作，Docker Compose就是其中之一。他可以快速部屬好幾個Container，而每個Container之中。可以進行所謂的前端、後端、資料庫的部暑。
+- 透過一鑑部屬，用同一個設定檔，可以啟起一個全新且完整的IT環境
+- 透過這個方式，只要少數IT人員去維護，跟版本控制
+- 第一種在一個小層級上，可以用容器化的方式去實作，Docker Compose就是其中之一。他可以快速部屬好幾個Container，而每個Container之中。可以進行所謂的前端、後端、資料庫的部暑。
 
-另外一個選擇是去雲端上面進行部屬 (ex Cloud Formation
+- 另外一個選擇是去雲端上面進行部屬 (ex Cloud Formation
 ![image](https://github.com/Tomalison/Docker/assets/96727036/5bb4c554-6f90-445b-9a6e-679953f31fcd)
-寫一個單一設定檔，快速部屬多個VM，在每個虛擬機之中快速部屬各自的應用程式。
+- 寫一個單一設定檔，快速部屬多個VM，在每個虛擬機之中快速部屬各自的應用程式。
 ![image](https://github.com/Tomalison/Docker/assets/96727036/0e58dcd3-46aa-481e-b959-32b70f281dda)
 
 ![image](https://github.com/Tomalison/Docker/assets/96727036/2e9b7ad6-ccff-497f-ad66-a2efccf832af)
 ![image](https://github.com/Tomalison/Docker/assets/96727036/80ce8da5-4f37-459b-9f3b-dd73940199f6)
 
 
-簡化專案佈版流程
+## 簡化專案佈版流程
 ![image](https://github.com/Tomalison/Docker/assets/96727036/4c979caf-1cbc-4402-80a0-d9c1613b7b93)
 ![image](https://github.com/Tomalison/Docker/assets/96727036/fcb5553f-f755-4119-a3de-493c30fc614b)
 
-解壓縮Zip檔(課程範例)，開啟docker daemon程式
+- 解壓縮Zip檔(課程範例)，開啟docker daemon程式
 
-先cd docker-demo/tmp/ (檔案的目錄位置)
-ls (查看本地有甚麼檔案目錄) -a(-a可以看到隱藏的檔案)
-在cd 到剛剛解壓縮的目錄底下 ex: docker-course-grand-demo-compose-master (如下圖)
+- 先cd docker-demo/tmp/ (檔案的目錄位置)
+- ls (查看本地有甚麼檔案目錄) -a(-a可以看到隱藏的檔案)
+- 在cd 到剛剛解壓縮的目錄底下 ex: docker-course-grand-demo-compose-master (如下圖)
 ![image](https://github.com/Tomalison/Docker/assets/96727036/eb780ba2-c9ab-4a58-9596-e853091b10b9)
-ls (可以看到範例準備的app、db、docker-compose.yml、web)
-docker-compose build --no-cache 
-docker-compose up -d
-docker container ls
-先找出VM Linux的IP位置
-echo $(docker-machine ip) 到這邊就佈署好了
-先關掉專案 docker-compose down
+- ls (可以看到範例準備的app、db、docker-compose.yml、web)
+- docker-compose build --no-cache 
+- docker-compose up -d
+- docker container ls
+- 先找出VM Linux的IP位置
+- echo $(docker-machine ip) 到這邊就佈署好了
+- 先關掉專案 docker-compose down
 
-解析:
+- 解析:
 ![image](https://github.com/Tomalison/Docker/assets/96727036/29f74b45-0730-4cd5-b85d-0bd1330e1806)
-cat .env  (可以看到幾個環境參數被放上去使用)
-開啟docker-compose.yml檔案解析
+- cat .env  (可以看到幾個環境參數被放上去使用)
+- 開啟docker-compose.yml檔案解析
 ![image](https://github.com/Tomalison/Docker/assets/96727036/5f765bc2-69c2-420d-ab29-2738be5fa0e3)
 ![image](https://github.com/Tomalison/Docker/assets/96727036/1b8a492c-ad60-4a06-85bf-94edc1b03e48)
 ![image](https://github.com/Tomalison/Docker/assets/96727036/36023aea-45bb-4c3c-a135-966fcbcc3dbe)
 ![1687660939798](https://github.com/Tomalison/Docker/assets/96727036/c8f26e52-e17b-4aa9-a72f-4d57d1bf74fb)
 ![image](https://github.com/Tomalison/Docker/assets/96727036/60056243-af82-4961-b30d-d136ba9399a7)
-
+``` sh
 version: "3.7"
 servuces:   #以下規劃3個容器
   mysql-db:
@@ -820,89 +829,90 @@ networks:
   my-bridge-001:
 volumes:
   db-date: #建造一個新Volume叫做db-data
+```
 ![image](https://github.com/Tomalison/Docker/assets/96727036/a83d7c81-d545-4544-91e2-edf13b8f20c3)
-可以用docker volume ls  / docker network ls / docker container ls / docker network inspect ContainerIP
+- 可以用docker volume ls  / docker network ls / docker container ls / docker network inspect ContainerIP
 
-建立乾淨測試環境實作示範
+## 建立乾淨測試環境實作示範
 ![image](https://github.com/Tomalison/Docker/assets/96727036/6b040d73-dc9a-4fdc-8ee3-e4a3a3834e34)
 
-因為要清掉測試環境，所以原本的docker-compose.yml的 volumes:要清掉
+- 因為要清掉測試環境，所以原本的docker-compose.yml的 volumes:要清掉
 ![image](https://github.com/Tomalison/Docker/assets/96727036/74150dec-1b16-480b-85b7-4b938251d030)
-再db資料夾中，有一個sql-scripts，測試資料有一組Insert into table讓我們的測試資料塞進資料庫，並在多塞七組測試資料進去
-因為有改db測試資料語法 我們要重新build一遍
-先docker-compose down關閉 再docker-compose build --no-cache
-然後再docker-compose up -d再背景執行 echo $(docker-machine ip) + docker container ls
+- 再db資料夾中，有一個sql-scripts，測試資料有一組Insert into table讓我們的測試資料塞進資料庫，並在多塞七組測試資料進去
+- 因為有改db測試資料語法 我們要重新build一遍
+- 先docker-compose down關閉 再docker-compose build --no-cache
+- 然後再docker-compose up -d再背景執行 echo $(docker-machine ip) + docker container ls
 ![image](https://github.com/Tomalison/Docker/assets/96727036/738f8c7e-6031-46de-9283-04ab3ecac4cc)
 
-如果我們要再做第二輪的測試，我們就打上docker down 再 docker-compose up -d 透過這個方式就可不斷建立新的測試環境
+- 如果我們要再做第二輪的測試，我們就打上docker down 再 docker-compose up -d 透過這個方式就可不斷建立新的測試環境
 
-實作跨平台佈署
+## 實作跨平台佈署
 ![image](https://github.com/Tomalison/Docker/assets/96727036/f87aacf6-fe70-442d-b3eb-abcfc4eda72a)
 
-image上傳到Docker hub / 蘋果新的m1/m2要多考慮CPU架構(ARM的CPU架構) 
-登入
+- image上傳到Docker hub / 蘋果新的m1/m2要多考慮CPU架構(ARM的CPU架構) 
+- 登入
 ![image](https://github.com/Tomalison/Docker/assets/96727036/3bdd74ea-623a-4641-afcc-b49634ac838a)
 
-上傳到Docker hub
-docker-compose push  這只能建立你這個CPU的規格image
-所以我們打開Docker Engine 看到Settings這邊 >>Features in development>>Experimental features確認Access experimental features有打勾
+- 上傳到Docker hub
+- docker-compose push  這只能建立你這個CPU的規格image
+- 所以我們打開Docker Engine 看到Settings這邊 >>Features in development>>Experimental features確認Access experimental features有打勾
 
-先刪掉所有Image
-docker rmi $(docker images -a -q)
-docker buildx create --use --name mybuilder可以一次建立多個CPU規格的image
-docker buildx ls
-docker buildx build --platform linux/amd64,linux/arm64 -t uopsdod/mysql-db-01 --push ./db
+- 先刪掉所有Image
+- docker rmi $(docker images -a -q)
+- docker buildx create --use --name mybuilder可以一次建立多個CPU規格的image
+- docker buildx ls
+- docker buildx build --platform linux/amd64,linux/arm64 -t uopsdod/mysql-db-01 --push ./db
 ![image](https://github.com/Tomalison/Docker/assets/96727036/cac4900d-e8a1-4478-b7a4-7a1c0b6e89bf)
 ![image](https://github.com/Tomalison/Docker/assets/96727036/49b48d7a-d00c-4cf7-9882-fc3f73f0d81c)
-docker buildx build --platform linux/amd64,linux/arm64 -t uopsdod/java-app-01 --push ./app
-docker buildx build --platform linux/amd64,linux/arm64 -t uopsdod/react-web-01 --push ./web
+- docker buildx build --platform linux/amd64,linux/arm64 -t uopsdod/java-app-01 --push ./app
+- docker buildx build --platform linux/amd64,linux/arm64 -t uopsdod/react-web-01 --push ./web
 
---實作2
-MAC
-docker pull uopsdod/mysql-db-01
-docker pull uopsdod/java-app-01
-docker pull uopsdod/react-web-01
-抓下三個image
-docker-compose up -d
-echo $(docker-machine ip)  / docker-compose down
+## 實作2
+#### MAC
+- docker pull uopsdod/mysql-db-01
+- docker pull uopsdod/java-app-01
+- docker pull uopsdod/react-web-01
+- 抓下三個image
+- docker-compose up -d
+- echo $(docker-machine ip)  / docker-compose down
 
 如何一次將所有images都抓下來
-docker images 
-docker-compose pull
+- docker images 
+- docker-compose pull
 
-Linux
-sudo yum install -y git
-sudo git clone 專案github位置
+#### Linux
+- sudo yum install -y git
+- sudo git clone 專案github位置
 ![image](https://github.com/Tomalison/Docker/assets/96727036/db46327f-0ccd-4872-99ca-cf0f125713dc)
-cd 專案目錄位置/
+- cd 專案目錄位置/
 
 ![image](https://github.com/Tomalison/Docker/assets/96727036/ae02057c-3f84-4e19-975c-e84e41117661)
 
-要將API_HOST_IP改為Linux最外的IP curl http://checkip.amazonaws.com 看到public ip
-vi .env 編輯檔案(a)，將IP改掉
+- 要將API_HOST_IP改為Linux最外的IP curl http://checkip.amazonaws.com 看到public ip
+- vi .env 編輯檔案(a)，將IP改掉
 ![image](https://github.com/Tomalison/Docker/assets/96727036/cac15ba0-4406-4208-88d6-60663471c8b5)
-編輯完後按下ESC，然後按下 :wq
+- 編輯完後按下ESC，然後按下 :wq
 ![image](https://github.com/Tomalison/Docker/assets/96727036/2380cd8a-a453-4b4c-832d-657de6cef77e)
-sudo docker images
-sudo /usr/local/bin/docker-compose pull
-sudo docker images
-sudo /usr/local/bin/docker-compose up -d
-sudo docker container ls
+- sudo docker images
+- sudo /usr/local/bin/docker-compose pull
+- sudo docker images
+- sudo /usr/local/bin/docker-compose up -d
+- sudo docker container ls
 
-Windows佈署示範
-先將範例檔案放到Program Files>Docker Toolbox
-cd 檔案目錄/
-ls -a
-cat .env
-echo $(docker-machine ip)
+#### Windows佈署示範
+- 先將範例檔案放到Program Files>Docker Toolbox
+- cd 檔案目錄/
+- ls -a
+- cat .env
+- echo $(docker-machine ip)
 ![Uploading image.png…]()
 
-docker images
-docker-compose pull
-docker images
-docker-compose up -d
-docker container ;s
-echo $(docker-machine ip)
-docker-compose down
+- docker images
+- docker-compose pull
+- docker images
+- docker-compose up -d
+- docker container ;s
+- echo $(docker-machine ip)
+- docker-compose down
 
-建立與使用Docker Swarm
+## 建立與使用Docker Swarm
