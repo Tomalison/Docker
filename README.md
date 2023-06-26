@@ -198,7 +198,7 @@ RUN cd ${myworkdir} \
 #### Dockerfile情境式語法介紹 Workdir
 
 ![image](https://github.com/Tomalison/Docker/assets/96727036/48e8ebac-6d46-4aa8-9b8d-35195bfb1c9d)
--在剛剛的範例中，我們現在加上一個workdir
+- 在剛剛的範例中，我們現在加上一個workdir
 ``` sh
 From alpine:latest
 ENV myworkspace /var/www/localhost/htdocs
@@ -905,7 +905,7 @@ volumes:
 - ls -a
 - cat .env
 - echo $(docker-machine ip)
-![Uploading image.png…]()
+![image](https://github.com/Tomalison/Docker/assets/96727036/76671590-cc90-4eb9-8b56-e4ce71ba4c3c)
 
 - docker images
 - docker-compose pull
@@ -916,3 +916,18 @@ volumes:
 - docker-compose down
 
 ## 建立與使用Docker Swarm
+![image](https://github.com/Tomalison/Docker/assets/96727036/07f0d5c1-8eb9-4ae1-9c7b-60b52581e8f1)
+![image](https://github.com/Tomalison/Docker/assets/96727036/20a0b974-cd93-4322-a66a-93e35d594a70)
+
+## Google Kubernetes Engine入門銜接
+![image](https://github.com/Tomalison/Docker/assets/96727036/86f3c522-4b0f-4b4e-a4c3-cc2bfd65730a)
+- Clusters 建立一個新的Clusters 用預設  >Node pool details >Size選3 >定義工作包讓node有事情做 > workloads >deploy >定義container >New container image >github(帳號與GKE連結起來_docker hub中要有Dockerfile)
+![image](https://github.com/Tomalison/Docker/assets/96727036/40aa44ef-5817-4a9c-990e-ed19e7642764)
+![image](https://github.com/Tomalison/Docker/assets/96727036/0e8593dd-92a2-494a-9503-f08a3db253b1)
+- 設好deploy
+- 一個pods可以擁有多個container
+- exposing service 點下expose > port 8080 : 80 > done
+![Uploading image.png…]()
+
+
+##
