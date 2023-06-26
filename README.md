@@ -1,4 +1,4 @@
-## 紀錄Docker學習紀錄
+# 紀錄Docker學習紀錄
 
 - 容器化技術，部屬歷史，硬體主機>作業系統>多個Application>當某個App出錯，他會影響其他App>為了解決這個問題，用多台硬體主機解決>後來出現VM(虛擬主機)，一台硬體，會有一個作業系統與一個Hypervisor，在這一層可以建立多個VM，在其中在建立多個OS與App
 - Container模式，底層是硬體與OS在來上一層有一個Docker Engine在上面再建立容器與App。用軟體就創造出的虛擬空間。 資源耗費最低。
@@ -7,7 +7,7 @@
 - 透過Docker image在各個作業系統使用。Mac、Linux、Windows。
 Diocker hub雲端空間提供其他人下載Docker image。(CentOS 作業系統下來)
 
-#### Docker三大功用
+## Docker三大功用
 
 1. 原本的作業方式是，先拿到程式碼，安裝所需環境與安裝指令跑起來，透過Docekr可以佈屬一個程式部屬包。簡化部屬
 2. 跨平台部屬，用Docker hub。先安裝Docker Engine環境就可下載下來。
@@ -26,67 +26,67 @@ Diocker hub雲端空間提供其他人下載Docker image。(CentOS 作業系統�
 
 ![image](https://github.com/Tomalison/Docker/assets/96727036/7491dc34-a940-4f05-b96a-5faea22efb49)
 
-#### Docker使用情境 
+## Docker使用情境 
 
 - 先到Docker Hub 進到 Repositories 
 - 然後再命令提示字元 用docker pull ___ 抓你要的
 ![image](https://github.com/Tomalison/Docker/assets/96727036/acc3007e-8b02-4e56-8f2c-4ea3cfb3f9c2)
 - 再來用docker container run hello-world
-TAG
-docker pull 專案名稱:latest 抓最新的版本來用
-docker pull 專案名稱:v4 抓指定的版本
+#### TAG
+- docker pull 專案名稱:latest 抓最新的版本來用
+- docker pull 專案名稱:v4 抓指定的版本
 
-#### 建立與使用Docker image
+## 建立與使用Docker image
 
-mkdir dockertest001
-cd dockertest001/ 進到這個目錄
-pwd 驗證一下目錄位置
+- mkdir dockertest001
+- cd dockertest001/ 進到這個目錄
+- pwd 驗證一下目錄位置
 
-# 將範例放到剛剛的dockertest001資料夾裡面，並將檔案名稱改為Dockerfile
-docker build -t tomsu25478/course-image-build002 .
-docker build -t tomsu25478/course-image-build002 --build-arg my_name_is="Tom Su" .
-docker container run tomsu25478/course-image-build002 .
-cat: read error: Is a directory
-You have built a new image from a Dockerfile. Well done, Tom Su!
+#### 將範例放到剛剛的dockertest001資料夾裡面，並將檔案名稱改為Dockerfile
+- docker build -t tomsu25478/course-image-build002 .
+- docker build -t tomsu25478/course-image-build002 --build-arg my_name_is="Tom Su" .
+- docker container run tomsu25478/course-image-build002 .
+- cat: read error: Is a directory
+- You have built a new image from a Dockerfile. Well done, Tom Su!
 
-# 上傳到Docker Hub
-先docker login (如果先登入 就先登出docker logout) 帳號密碼(yours)
-docker push 帳號/專案名稱
+#### 上傳到Docker Hub
+- 先docker login (如果先登入 就先登出docker logout) 帳號密碼(yours)
+- docker push 帳號/專案名稱
 
-# 如何清理乾淨不需要的images
+#### 如何清理乾淨不需要的images
 - 先打上 docker rmi 帳號/專案名稱
-  docker rm container的代號
+- docker rm container的代號
 - 這樣就可以再用 docker rmi 清掉
 ![image](https://github.com/Tomalison/Docker/assets/96727036/e1016ac0-ed99-42b8-9620-deca2ce646aa)
 
-# 如果要強制清理
+#### 如果要強制清理
 - docker rmi -f 帳號/專案名稱
 
-#### 建立與使用Docker container
-docker container ls 查詢目前有哪些container
-docker pull alpine
-docker container run --name c001 alpine ls /  這邊可以將container縮寫
+## 建立與使用Docker container
+- docker container ls 查詢目前有哪些container
+- docker pull alpine
+- docker container run --name c001 alpine ls /  這邊可以將container縮寫
 
 - 當程序不要一直跑得話 可以用clear清掉
-docker run -it 可以讓我們需要跑的一個程序 一直跑下去 --name 可以取名
-docker run -it --name c003 alpine /bin/sh <--進到該程序需要的東西 再輸入exit 就可以離開這個程序離開這個container
+- docker run -it 可以讓我們需要跑的一個程序 一直跑下去 --name 可以取名
+- docker run -it --name c003 alpine /bin/sh <--進到該程序需要的東西 再輸入exit 就可以離開這個程序離開這個container
 ![image](https://github.com/Tomalison/Docker/assets/96727036/bc8e1690-e660-4c82-87c0-4b6a6e830647)
 
-docker run -d (daemon 長期在背景跑)
-tail -f 追蹤某個file的log 並把他印到console上 還有tail解決副我們通常用這個file
-docker run -d --name c004 alpine tail -f /dev/null
-在按docker container ls 可以看到我們這次終於有一個container一直在背景跑 他跑的就是剛剛指令中的tail -f /dev/null
+- docker run -d (daemon 長期在背景跑)
+- tail -f 追蹤某個file的log 並把他印到console上 還有tail解決副我們通常用這個file
+- docker run -d --name c004 alpine tail -f /dev/null
+- 在按docker container ls 可以看到我們這次終於有一個container一直在背景跑 他跑的就是剛剛指令中的tail -f /dev/null
 ![image](https://github.com/Tomalison/Docker/assets/96727036/c987e65c-0707-4917-be92-31d4712723fa)
-還想在這個container加點東西，則打上docker exec -it 再加上我們的container ID +兩個要執行的程序 /bin/sh
+- 還想在這個container加點東西，則打上docker exec -it 再加上我們的container ID +兩個要執行的程序 /bin/sh
 ![image](https://github.com/Tomalison/Docker/assets/96727036/a7a8cf43-1291-4fcb-95c3-4fa304771336)
 
 
 ![image](https://github.com/Tomalison/Docker/assets/96727036/adcbf12b-553b-425b-97ed-49cde205d116)
-要將container清空之前要先將之停下來  docker container stop  ContainerID
-先用docker container ls -a查出所有的container
-將你要清掉的打上docker container rm ContainerID
+- 要將container清空之前要先將之停下來  docker container stop  ContainerID
+- 先用docker container ls -a查出所有的container
+- 將你要清掉的打上docker container rm ContainerID
 
-#### 建立與使用Dockerfile
+## 建立與使用Dockerfile
 
 - 我們透過Docker Client執行指令 而這些指令都會送到Docker Engine上面去(這是兩個工作者) 這整個過程中有三個空間 第一個是在硬體主機的OS空間 第二個是在虛擬主機建起來的LinuxOS空間
 - 第三個是Docker Engine去建起來的臨時Container空間。
@@ -150,7 +150,7 @@ ENTRYPOINT ["httpd", "-D", "FOREGROUND"]
 ![image](https://github.com/Tomalison/Docker/assets/96727036/6ad3a94c-8e8a-4cd1-9005-e81a918bf11f)
 - 最後用 docker run -d -p 8081:80 uopsdod/004 (給LinuxVM一個port對應到aphache的80 port)
 ![image](https://github.com/Tomalison/Docker/assets/96727036/1cbb3e18-a2f4-4eab-92ed-15d4c304e826)
-```
+
 #### Dockerfile情境語法ENV
 ``` sh
 From alpine:latest
@@ -176,14 +176,15 @@ RUN cd /var/www/localhost/htdpcs \
     && echo "<h3>I am Tom Round 03<h3>" >> index.html
 ```
 - 同樣的行為做三次，希望在首頁多出這幾行
-docker build-t uopsdod/005 .
-docker images
-docker run -d -p 8080:80 uopsdod/005
-docker container ls
-echo $(docker-machine ip)
+- docker build-t uopsdod/005 .
+- docker images
+- docker run -d -p 8080:80 uopsdod/005
+- docker container ls
+- echo $(docker-machine ip)
 - 將IP跟埠號貼到網頁上，在網頁上就可以看到剛剛加的echo內容
 
-但如果想要將這些相同的路徑放在一起則用
+- 但如果想要將這些相同的路徑放在一起則用
+``` sh
 ENV myworkdir /var/www/localhost/htdocs
 RUN cd ${myworkdir} \ 
     && echo "<h3>I am Tom Round 01<h3>" >> index.html
@@ -191,13 +192,14 @@ RUN cd ${myworkdir} \
     && echo "<h3>I am Tom Round 02<h3>" >> index.html
 RUN cd ${myworkdir} \ 
     && echo "<h3>I am Tom Round 03<h3>" >> index.html
-
+```
   這就是ENV的功用
 
-Dockerfile情境式語法介紹 Workdir
+#### Dockerfile情境式語法介紹 Workdir
 
 ![image](https://github.com/Tomalison/Docker/assets/96727036/48e8ebac-6d46-4aa8-9b8d-35195bfb1c9d)
-在剛剛的範例中，我們現在加上一個workdir
+-在剛剛的範例中，我們現在加上一個workdir
+``` sh
 From alpine:latest
 ENV myworkspace /var/www/localhost/htdocs
 RUN apk --update add apaches2
@@ -209,9 +211,10 @@ RUN cd ${myworkspace} \
 RUN cd ${myworkspace} \ 
     && echo "<h3>I am Tom Round 03<h3>" >> index.html
 ENTRYPOINT ["httpd", "-D", "FOREGROUND"]
-
-如果我們想要把這個重複的CD過程給取代掉
-我們可以將上面的程式改成
+```
+- 如果我們想要把這個重複的CD過程給取代掉
+- 我們可以將上面的程式改成
+``` sh
 From alpine:latest
 ENV myworkspace /var/www/localhost/htdocs
 WORKDIR ${myworkspace}  
@@ -221,11 +224,11 @@ RUN echo "<h3>I am Tom Round 01<h3>" >> index.html
 RUN echo "<h3>I am Tom Round 02<h3>" >> index.html
 RUN echo "<h3>I am Tom Round 03<h3>" >> index.html
 ENTRYPOINT ["httpd", "-D", "FOREGROUND"]
+```
+- 直接將預設目錄指到這個myworkspace
+- 後面的RUN就用每一個路徑都在打一次了
 
-直接將預設目錄指到這個myworkspace
-後面的RUN就用每一個路徑都在打一次了
-
-Dockerfile情境式語法介紹 ARG (argument)
+#### Dockerfile情境式語法介紹 ARG (argument)
 arg可以讓我們在docker build的時候去改變這個變數
 呈上範例，想將重複詞句
 From alpine:latest
