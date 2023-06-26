@@ -229,8 +229,9 @@ ENTRYPOINT ["httpd", "-D", "FOREGROUND"]
 - 後面的RUN就用每一個路徑都在打一次了
 
 #### Dockerfile情境式語法介紹 ARG (argument)
-arg可以讓我們在docker build的時候去改變這個變數
-呈上範例，想將重複詞句
+- arg可以讓我們在docker build的時候去改變這個變數
+- 呈上範例，想將重複詞句
+``` sh
 From alpine:latest
 ENV myworkspace /var/www/localhost/htdocs
 WORKDIR ${myworkspace}  
@@ -241,116 +242,118 @@ RUN echo "<h3>I am ${whoami} Round 01<h3>" >> index.html
 RUN echo "<h3>I am ${whoami} Round 02<h3>" >> index.html
 RUN echo "<h3>I am ${whoami} Round 03<h3>" >> index.html
 ENTRYPOINT ["httpd", "-D", "FOREGROUND"]
+```
 ![image](https://github.com/Tomalison/Docker/assets/96727036/6f036675-d0e4-4a39-8ff4-1b919ee7e83d)
-接下來想改變
-用同一個dockerfile建造不童的docker image
-docker build --build-arg whoami=Tony -t uopsdod/007 .
-clear
-docker images
-docker run -d -p 8089:80 uopsdod/007
-docker container ls
-echo $(docker-machine ip)
-接下來在網頁上就可以看到以下圖
+- 接下來想改變
+- 用同一個dockerfile建造不童的docker image
+- docker build --build-arg whoami=Tony -t uopsdod/007 .
+- clear
+- docker images
+- docker run -d -p 8089:80 uopsdod/007
+- docker container ls
+- echo $(docker-machine ip)
+- 接下來在網頁上就可以看到以下圖
 ![image](https://github.com/Tomalison/Docker/assets/96727036/988c4808-7c08-4c62-beb6-45b5d029235c)
 
 
-Dockerfile情境式語法介紹COPY
+#### Dockerfile情境式語法介紹COPY
 
-課程提供的Content.txt檔先放到跟Dockerfile同個資料夾
+- 課程提供的Content.txt檔先放到跟Dockerfile同個資料夾
 ![image](https://github.com/Tomalison/Docker/assets/96727036/4c14b18f-69d2-49be-ba19-18a93fca5f54)
-Terminal中打上ls就可以看到這兩個檔案
-我現在想要將我剛剛的content的book list資訊放到index.html裡面
-就可以在首頁看到book list
-
+- Terminal中打上ls就可以看到這兩個檔案
+- 我現在想要將我剛剛的content的book list資訊放到index.html裡面
+- 就可以在首頁看到book list
+``` sh
 Copy ./content.txt ./
 RUN ls -l ./
 RUN cat ./content.txt ./ >> index.html
-現在當前目錄是Linux VM空間docker daemon會把當前的目錄下的content.txt檔案複製一個到container空間的當前目錄下
-而目前的當前目錄就是剛剛在Dockerfile定義的workdir這裡
+```
+- 現在當前目錄是Linux VM空間docker daemon會把當前的目錄下的content.txt檔案複製一個到container空間的當前目錄下
+- 而目前的當前目錄就是剛剛在Dockerfile定義的workdir這裡
 ![image](https://github.com/Tomalison/Docker/assets/96727036/de015053-f3d0-4f87-b330-761142de663a)
 ![image](https://github.com/Tomalison/Docker/assets/96727036/71037951-3330-4535-9bca-3096d2af6a5b)
 
-將任意Container變成Docker Image
+- 將任意Container變成Docker Image
 ![image](https://github.com/Tomalison/Docker/assets/96727036/0cd62f82-afbd-4957-bee4-a13340b6d716)
 
-如何把Container轉換成Image
-首先打上ls 
-cat Dockerfile
-docker build -t uopsdod/myimage .
-docker images
-docker run -d -p 8080:80 uopsdod/myimage
-echo $(docker-machine ip)
+## 如何把Container轉換成Image
+- 首先打上ls 
+- cat Dockerfile
+- docker build -t uopsdod/myimage .
+- docker images
+- docker run -d -p 8080:80 uopsdod/myimage
+- echo $(docker-machine ip)
 
-docker container ls
-docker exec -it ContainerID /bin/sh
+- docker container ls
+- docker exec -it ContainerID /bin/sh
 ![image](https://github.com/Tomalison/Docker/assets/96727036/1a8ff995-13ea-465a-833c-b6ac1f121fe4)
-ls
-cat index.html
-echo "I am going to turn this container into an new image" >> index.html
-就可以看到首頁篩入資訊
-接下來先離開這個Container > exit
-將這個運行中的Container轉換成Image
-複製ContainerID
-先打上docker commit ContainerID uopsdod/containertoimage
+- ls
+- cat index.html
+- echo "I am going to turn this container into an new image" >> index.html
+- 就可以看到首頁篩入資訊
+- 接下來先離開這個Container > exit
+- 將這個運行中的Container轉換成Image
+- 複製ContainerID
+- 先打上docker commit ContainerID uopsdod/containertoimage
 ![image](https://github.com/Tomalison/Docker/assets/96727036/ce363660-99fd-49e5-9a64-03e5e80e3d5f)
 
-docker container ls
-先停止與清理Container
-docker stop ContainerID
-docker rm ContainerID
-clear
+- docker container ls
+- 先停止與清理Container
+- docker stop ContainerID
+- docker rm ContainerID
+- clear
 
-docker images
-docker run -d -p 8080:80 uopsdod/containertoimage
-echo $(docker-machine ip)
+- docker images
+- docker run -d -p 8080:80 uopsdod/containertoimage
+- echo $(docker-machine ip)
 ![image](https://github.com/Tomalison/Docker/assets/96727036/91847e24-25d9-4306-8d6a-82661d12c270)
 
-Docker網路模式介紹
-none/ bridge / container / host
+## Docker網路模式介紹
+- none/ bridge / container / host
 ![image](https://github.com/Tomalison/Docker/assets/96727036/afa332a6-064d-4868-a48c-aa9846181d4a)
-Bridge
-IP其實是一個有限的座位，容器要跟Network要IP來使用，如果隸屬不同的Bridge，那兩個容器是無法互通的。屬於同一個網路空間就可以彼此溝通
-Container
-例如容器3對應到容器02-1，那就會拿到同一個標籤，同一個IP。
-host
-例如容器4會跟Linux VM Network要一個IP，那他就可以跟Linux主機其他程式互通網路。
+#### Bridge
+- IP其實是一個有限的座位，容器要跟Network要IP來使用，如果隸屬不同的Bridge，那兩個容器是無法互通的。屬於同一個網路空間就可以彼此溝通
+#### Container
+- 例如容器3對應到容器02-1，那就會拿到同一個標籤，同一個IP。
+#### host
+- 例如容器4會跟Linux VM Network要一個IP，那他就可以跟Linux主機其他程式互通網路。
 
-Docker網路介紹None模式
-先將一個base image抓下來，bocker pull alpine
-docker network ls
-docker run -d --network none --name none-mode alpine tail -f /dev/null
-docker container ls
-docker network inspect none
-透過這個指令我們就能明確知道我們已經將這個container放到這個none網路中
-驗證 docker exec -it ContainerID /bin/sh
-id addr ls
-可以看到只能連自己 127.0.0.1
+## Docker網路介紹None模式
+- 先將一個base image抓下來，bocker pull alpine
+- docker network ls
+- docker run -d --network none --name none-mode alpine tail -f /dev/null
+- docker container ls
+- docker network inspect none
+- 透過這個指令我們就能明確知道我們已經將這個container放到這個none網路中
+- 驗證 docker exec -it ContainerID /bin/sh
+- id addr ls
+- 可以看到只能連自己 127.0.0.1
 ![image](https://github.com/Tomalison/Docker/assets/96727036/3c52107c-add5-4891-acb0-fa54173cdb4f)
 
-Docker網路介紹Bridge模式
+#### Docker網路介紹Bridge模式
 
-docker network ls 查看
-docker network create --driver bridge my-bridge
-創建一個自己的bridge
-docker network inspect my-bridge
+- docker network ls 查看
+- docker network create --driver bridge my-bridge
+- 創建一個自己的bridge
+- docker network inspect my-bridge
 ![image](https://github.com/Tomalison/Docker/assets/96727036/1bb61535-1165-44a2-b8b4-ffb74e2d6f23)
 
-可以看到Subnet的網路空間，是我們my-bridge的網路空間
-建立一個新的Container 然後放到我們my-bridge的網路空間
-docker run -d --network my-bridge --name bridge-mode001 alpine tail -f /dev/null
-docker container ls
-docker network inspect my-bridge
+- 可以看到Subnet的網路空間，是我們my-bridge的網路空間
+- 建立一個新的Container 然後放到我們my-bridge的網路空間
+- docker run -d --network my-bridge --name bridge-mode001 alpine tail -f /dev/null
+- docker container ls
+- docker network inspect my-bridge
 ![image](https://github.com/Tomalison/Docker/assets/96727036/63443865-4c5d-4d73-a518-d99e665c9450)
 
-先複製Containers裡的ID
-docker exec -it ContainerID /bin/sh
-ip addr ls 也可以看到剛剛my-bridge裡配了一組IP來給這個Container使用(如下圖
+- 先複製Containers裡的ID
+- docker exec -it ContainerID /bin/sh
+- ip addr ls 也可以看到剛剛my-bridge裡配了一組IP來給這個Container使用(如下圖
 ![image](https://github.com/Tomalison/Docker/assets/96727036/3ab4a670-dd6e-4f58-96e3-b198308051de)
-用ping 8.8.8.8(google)
-可以看到可以連到外網
-exit>>clear
-我們要再來建造一個Container放到同樣是my-bridge的網路空間裡面
-docker run -d --network my-bridge --name bridge-mode002 alpine tail -f /dev/null
+- 用ping 8.8.8.8(google)
+- 可以看到可以連到外網
+- exit>>clear
+- 我們要再來建造一個Container放到同樣是my-bridge的網路空間裡面
+- docker run -d --network my-bridge --name bridge-mode002 alpine tail -f /dev/null
 docker container ls
 docker network inspect my-bridge
 就可以看到剛剛的bridge-mode002
